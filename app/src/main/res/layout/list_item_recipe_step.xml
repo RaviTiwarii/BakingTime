@@ -7,9 +7,9 @@
 
     <TextView
         android:id="@+id/tv_step_description"
+        style="@style/TextAppearance.AppCompat.Title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/TextAppearance.AppCompat.Title"
-        tools:text="Recipe Introduction"
-        android:padding="8dp"/>
+        android:padding="7dp"
+        tools:text="Recipe Introduction" />
 </LinearLayout>
