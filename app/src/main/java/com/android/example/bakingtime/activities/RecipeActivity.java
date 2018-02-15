@@ -1,4 +1,4 @@
-package com.android.example.bakingtime.ui;
+package com.android.example.bakingtime.activities;
 
 import android.content.Context;
 import android.content.Intent;
@@ -8,6 +8,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
+
+import com.android.example.bakingtime.fragments.RecipeFragment;
 
 public class RecipeActivity extends SingleFragmentActivity {
 

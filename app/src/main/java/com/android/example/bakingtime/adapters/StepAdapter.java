@@ -1,4 +1,4 @@
-package com.android.example.bakingtime.ui;
+package com.android.example.bakingtime.adapters;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;

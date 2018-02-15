@@ -4,15 +4,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".ui.RecipeActivity">
+    tools:context=".activities.RecipeActivity">
 
     <TextView
         android:id="@+id/tv_ingredients"
+        style="@style/TextAppearance.AppCompat.Title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:text="1.5 TSP Salt"
         android:padding="10dp"
-        style="@style/TextAppearance.AppCompat.Title" />
+        tools:text="1.5 TSP Salt" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_recipe_steps"

@@ -1,4 +1,4 @@
-package com.android.example.bakingtime.ui;
+package com.android.example.bakingtime.fragments;
 
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +12,8 @@ import android.view.ViewGroup;
 import android.widget.GridView;
 
 import com.android.example.bakingtime.R;
+import com.android.example.bakingtime.activities.RecipeActivity;
+import com.android.example.bakingtime.adapters.RecipeAdapter;
 import com.android.example.bakingtime.data.local.RecipeStore;
 import com.android.example.bakingtime.data.model.Recipe;
 

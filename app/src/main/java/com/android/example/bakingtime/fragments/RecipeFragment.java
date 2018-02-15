@@ -1,4 +1,4 @@
-package com.android.example.bakingtime.ui;
+package com.android.example.bakingtime.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.android.example.bakingtime.R;
+import com.android.example.bakingtime.adapters.StepAdapter;
 import com.android.example.bakingtime.data.local.RecipeStore;
 import com.android.example.bakingtime.data.model.Ingredient;
 import com.android.example.bakingtime.data.model.Recipe;

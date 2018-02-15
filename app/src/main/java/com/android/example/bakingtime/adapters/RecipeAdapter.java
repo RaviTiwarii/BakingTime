@@ -1,4 +1,4 @@
-package com.android.example.bakingtime.ui;
+package com.android.example.bakingtime.adapters;
 
 import android.content.Context;
 import android.support.annotation.LayoutRes;
