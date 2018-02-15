@@ -17,7 +17,7 @@ public class Ingredient {
     private final String name;
     @NonNull
     private final String measure;
-    private final int quantity;
+    private final float quantity;
 
     /**
      * Returns the new instance of name.
@@ -27,14 +27,13 @@ public class Ingredient {
      * @param quantity Quantity of ingredient
      * @return new instance of Ingredient
      */
-    private Ingredient(@NonNull final String name, @NonNull final String measure, int quantity) {
+    private Ingredient(@NonNull final String name, @NonNull final String measure, float quantity) {
         this.quantity = quantity;
         this.measure = measure;
         this.name = name;
     }
 
     /**
-     *
      * @param jsonObject
      * @return
      * @throws JSONException
@@ -44,13 +43,14 @@ public class Ingredient {
             throws JSONException {
         String name = jsonObject.getString("ingredient");
         String measure = jsonObject.getString("measure");
-        int quantity = jsonObject.getInt("quantity");
+        float quantity = (float) jsonObject.getDouble("quantity");
 
         return new Ingredient(name, measure, quantity);
     }
 
     /**
      * Returns the name of the ingredient.
+     *
      * @return name of the ingredient
      */
     @NonNull
@@ -60,6 +60,7 @@ public class Ingredient {
 
     /**
      * Returns the measurement of the ingredient.
+     *
      * @return measurement of the ingredient
      */
     @NonNull
@@ -69,9 +70,10 @@ public class Ingredient {
 
     /**
      * Returns the quantity of the ingredient.
+     *
      * @return the quantity of the ingredient
      */
-    public int getQuantity() {
+    public float getQuantity() {
         return quantity;
     }
 }

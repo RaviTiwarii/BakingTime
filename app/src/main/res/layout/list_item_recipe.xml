@@ -10,12 +10,12 @@
 
     <TextView
         android:id="@+id/tv_recipe_name"
+        style="@style/TextAppearance.AppCompat.Display1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
+        android:layout_marginTop="5dp"
         android:gravity="center"
-        style="@style/TextAppearance.AppCompat.Display1"
         tools:text="Recipe Name" />
 
 </LinearLayout>

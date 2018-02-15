@@ -13,11 +13,15 @@ import java.util.List;
 public class Recipe {
 
     private final long id;
-    @NonNull private final String name;
-    @NonNull private final List<Ingredient> ingredients;
-    @NonNull private final List<Step> steps;
+    @NonNull
+    private final String name;
+    @NonNull
+    private final List<Ingredient> ingredients;
+    @NonNull
+    private final List<Step> steps;
     private final int servings;
-    @Nullable private final String imageUrl;
+    @Nullable
+    private final String imageUrl;
 
     private Recipe(final long id,
                    @NonNull final String name,

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Baking Time</string>
+    <string name="ingredient_detail">%1$.1f %2$s %3$s</string>
+    <string name="no_recipe_message">No Recipe Found</string>
 </resources>

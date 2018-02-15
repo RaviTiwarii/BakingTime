@@ -9,10 +9,14 @@ import org.json.JSONObject;
 public class Step {
 
     private final long id;
-    @NonNull private final String description;
-    @NonNull private final String shortDescription;
-    @Nullable private final String videoUrl;
-    @Nullable private final String thumbnailUrl;
+    @NonNull
+    private final String description;
+    @NonNull
+    private final String shortDescription;
+    @Nullable
+    private final String videoUrl;
+    @Nullable
+    private final String thumbnailUrl;
 
     private Step(long id, @NonNull String description, @NonNull String shortDescription,
                  @Nullable String videoUrl, @Nullable String thumbnailUrl) {
