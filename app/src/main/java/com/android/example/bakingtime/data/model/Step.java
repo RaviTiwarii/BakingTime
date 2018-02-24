@@ -1,7 +1,6 @@
 package com.android.example.bakingtime.data.model;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,17 +8,13 @@ import org.json.JSONObject;
 public class Step {
 
     private final long id;
-    @NonNull
     private final String description;
-    @NonNull
     private final String shortDescription;
-    @Nullable
     private final String videoUrl;
-    @Nullable
     private final String thumbnailUrl;
 
     private Step(long id, @NonNull String description, @NonNull String shortDescription,
-                 @Nullable String videoUrl, @Nullable String thumbnailUrl) {
+                 @NonNull String videoUrl, @NonNull String thumbnailUrl) {
         this.id = id;
         this.description = description;
         this.shortDescription = shortDescription;
@@ -52,12 +47,12 @@ public class Step {
         return shortDescription;
     }
 
-    @Nullable
+    @NonNull
     public String getVideoUrl() {
         return videoUrl;
     }
 
-    @Nullable
+    @NonNull
     public String getThumbnailUrl() {
         return thumbnailUrl;
     }

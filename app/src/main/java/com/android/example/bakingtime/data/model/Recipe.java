@@ -104,4 +104,13 @@ public class Recipe {
     public String getImageUrl() {
         return imageUrl;
     }
+
+    @Nullable
+    public Step getStep(long stepId) {
+        for (Step step : steps) {
+            if (step.getId() == stepId)
+                return step;
+        }
+        return null;
+    }
 }
