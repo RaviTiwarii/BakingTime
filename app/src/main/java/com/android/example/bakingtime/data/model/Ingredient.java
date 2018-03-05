@@ -5,51 +5,59 @@ import android.support.annotation.NonNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Locale;
+
 /**
- * This class represent the ingredients of a recipe.
+ * Model class for ingredient.
+ * This class represents the ingredient of a recipe.
  *
  * @author Ravi Tiwari
  * @version 1.0
+ * @since 1.0
  */
 public class Ingredient {
+
+    private static final String KEY_NAME = "ingredient";
+    private static final String KEY_MEASURE = "measure";
+    private static final String KEY_QUANTITY = "quantity";
 
     @NonNull
     private final String name;
     @NonNull
     private final String measure;
-    private final float quantity;
+    @NonNull
+    private final String quantity;
 
     /**
-     * Returns the new instance of name.
+     * Constructor for class Ingredient.
      *
-     * @param name     Name of the ingredient
-     * @param measure  Measurement of ingredient
-     * @param quantity Quantity of ingredient
-     * @return new instance of Ingredient
+     * @param name     The name of the ingredient
+     * @param measure  The measurement of ingredient
+     * @param quantity The quantity of ingredient
      */
-    private Ingredient(@NonNull final String name, @NonNull final String measure, float quantity) {
+    private Ingredient(@NonNull String name, @NonNull String measure, @NonNull String quantity) {
         this.quantity = quantity;
         this.measure = measure;
         this.name = name;
     }
 
     /**
-     * @param jsonObject
-     * @return
-     * @throws JSONException
+     * This method reads ingredient from json object or throws JsonException if data is invalid.
+     *
+     * @param jsonObject The step json object
+     * @return ingredient object
+     * @throws JSONException When data is invalid
      */
     @NonNull
-    public static Ingredient fromJson(@NonNull final JSONObject jsonObject)
-            throws JSONException {
-        String name = jsonObject.getString("ingredient");
-        String measure = jsonObject.getString("measure");
-        float quantity = (float) jsonObject.getDouble("quantity");
-
+    public static Ingredient fromJson(@NonNull final JSONObject jsonObject) throws JSONException {
+        String name = jsonObject.getString(KEY_NAME);
+        String measure = jsonObject.getString(KEY_MEASURE);
+        String quantity = jsonObject.getString(KEY_QUANTITY);
         return new Ingredient(name, measure, quantity);
     }
 
     /**
-     * Returns the name of the ingredient.
+     * This method returns the name of the ingredient.
      *
      * @return name of the ingredient
      */
@@ -59,7 +67,7 @@ public class Ingredient {
     }
 
     /**
-     * Returns the measurement of the ingredient.
+     * This method returns the measurement of the ingredient.
      *
      * @return measurement of the ingredient
      */
@@ -69,11 +77,23 @@ public class Ingredient {
     }
 
     /**
-     * Returns the quantity of the ingredient.
+     * This method returns the quantity of the ingredient.
      *
      * @return the quantity of the ingredient
      */
-    public float getQuantity() {
+    @NonNull
+    public String getQuantity() {
         return quantity;
+    }
+
+    /**
+     * This method returns the string representation of the ingredient object.
+     *
+     * @return string representation of the ingredient object
+     */
+    @Override
+    public String toString() {
+        return String.format(Locale.getDefault(),
+                "Ingredient{name='%s', measure='%s', quantity=%s}", name, measure, quantity);
     }
 }

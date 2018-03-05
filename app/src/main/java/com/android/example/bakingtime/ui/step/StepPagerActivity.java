@@ -1,4 +1,4 @@
-package com.android.example.bakingtime.activities;
+package com.android.example.bakingtime.ui.step;
 
 import android.content.Context;
 import android.content.Intent;
@@ -12,14 +12,11 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.ImageButton;
 
 import com.android.example.bakingtime.R;
 import com.android.example.bakingtime.data.local.RecipeStore;
 import com.android.example.bakingtime.data.model.Recipe;
 import com.android.example.bakingtime.data.model.Step;
-import com.android.example.bakingtime.fragments.StepFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,21 +26,18 @@ public class StepPagerActivity extends AppCompatActivity {
     private static final String EXTRA_RECIPE_ID = "com.android.example.bakingtime.extra_recipe_id";
     private static final String EXTRA_STEP_ID = "com.android.example.bakingtime.extra_step_id";
 
+    private ViewPager viewPager;
     private Recipe recipe;
     private List<Step> steps = new ArrayList<>();
-    private long stepId;
+
+    private int stepId;
     private int currentStepIndex;
 
-    private ViewPager viewPager;
-    private ImageButton nextStepButton;
-    private ImageButton previousStepButton;
-
-    public static Intent newIntent(@NonNull final Context context, final long recipeId,
-                                   final long stepId) {
+    public static Intent newIntent(@NonNull final Context context, final int recipeId,
+                                   final int stepId) {
         Intent intent = new Intent(context, StepPagerActivity.class);
         intent.putExtra(EXTRA_RECIPE_ID, recipeId);
         intent.putExtra(EXTRA_STEP_ID, stepId);
-
         return intent;
     }
 
@@ -55,10 +49,10 @@ public class StepPagerActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         if (extras != null && extras.containsKey(EXTRA_RECIPE_ID)
                 && extras.containsKey(EXTRA_STEP_ID)) {
-            long recipeId = extras.getLong(EXTRA_RECIPE_ID);
-            stepId = extras.getLong(EXTRA_STEP_ID);
+            int recipeId = extras.getInt(EXTRA_RECIPE_ID);
+            stepId = extras.getInt(EXTRA_STEP_ID);
             recipe = RecipeStore.get(this).getRecipe(recipeId);
-            steps = recipe.getSteps();
+            steps = recipe != null ? recipe.getSteps() : new ArrayList<>();
         }
 
         ActionBar actionBar = getSupportActionBar();
@@ -71,12 +65,6 @@ public class StepPagerActivity extends AppCompatActivity {
     }
 
     private void initializeViews() {
-        nextStepButton = findViewById(R.id.btn_next);
-        nextStepButton.setOnClickListener(view -> viewPager.setCurrentItem(++currentStepIndex));
-
-        previousStepButton = findViewById(R.id.btn_previous);
-        previousStepButton.setOnClickListener(view -> viewPager.setCurrentItem(--currentStepIndex));
-
         viewPager = findViewById(R.id.step_view_pager);
         setUpViewPager();
 
@@ -101,20 +89,6 @@ public class StepPagerActivity extends AppCompatActivity {
             @Override
             public int getCount() {
                 return steps.size();
-            }
-        });
-
-        viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                super.onPageScrolled(position, positionOffset, positionOffsetPixels);
-                currentStepIndex = position;
-
-                int nextButtonVisibility = (position < steps.size() - 1) ? View.VISIBLE : View.INVISIBLE;
-                nextStepButton.setVisibility(nextButtonVisibility);
-
-                int previousButtonVisibility = (position > 0) ? View.VISIBLE : View.INVISIBLE;
-                previousStepButton.setVisibility(previousButtonVisibility);
             }
         });
     }

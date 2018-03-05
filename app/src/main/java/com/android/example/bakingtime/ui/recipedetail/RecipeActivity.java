@@ -1,4 +1,4 @@
-package com.android.example.bakingtime.activities;
+package com.android.example.bakingtime.ui.recipedetail;
 
 import android.content.Context;
 import android.content.Intent;
@@ -11,8 +11,9 @@ import android.view.MenuItem;
 
 import com.android.example.bakingtime.R;
 import com.android.example.bakingtime.data.model.Step;
-import com.android.example.bakingtime.fragments.RecipeFragment;
-import com.android.example.bakingtime.fragments.StepFragment;
+import com.android.example.bakingtime.ui.SingleFragmentActivity;
+import com.android.example.bakingtime.ui.step.StepFragment;
+import com.android.example.bakingtime.ui.step.StepPagerActivity;
 
 /**
  * This activity shows the details of a recipe.
@@ -25,7 +26,7 @@ public class RecipeActivity extends SingleFragmentActivity implements RecipeFrag
     private static final String EXTRA_RECIPE_ID = "com.android.example.bakingtime.extra.recipe_id";
     private static final String STATE_RECIPE_ID = "com.android.example.bakingtime.state.recipe_id";
 
-    private long recipeId = -1;
+    private int recipeId = -1;
 
     /**
      * Returns the intent to start this activity.
@@ -34,7 +35,7 @@ public class RecipeActivity extends SingleFragmentActivity implements RecipeFrag
      * @param recipeId recipe id
      * @return intent to start this activity
      */
-    public static Intent newIntent(@NonNull final Context context, final long recipeId) {
+    public static Intent newIntent(@NonNull final Context context, final int recipeId) {
         Intent intent = new Intent(context, RecipeActivity.class);
         intent.putExtra(EXTRA_RECIPE_ID, recipeId);
         return intent;
@@ -52,6 +53,7 @@ public class RecipeActivity extends SingleFragmentActivity implements RecipeFrag
 
     /**
      * Returns the fragment instance hosted by this activity.
+     *
      * @return fragment instance.
      */
     @NonNull
@@ -64,7 +66,7 @@ public class RecipeActivity extends SingleFragmentActivity implements RecipeFrag
         if (recipeId != -1) {
             return RecipeFragment.newInstance(recipeId);
         } else if (extras != null && extras.containsKey(EXTRA_RECIPE_ID)) {
-            recipeId = extras.getLong(EXTRA_RECIPE_ID);
+            recipeId = extras.getInt(EXTRA_RECIPE_ID);
             return RecipeFragment.newInstance(recipeId);
         } else {
             throw new IllegalArgumentException("No recipe id found");
@@ -78,20 +80,21 @@ public class RecipeActivity extends SingleFragmentActivity implements RecipeFrag
             case android.R.id.home:
                 NavUtils.navigateUpFromSameTask(this);
                 return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putLong(STATE_RECIPE_ID, recipeId);
+        outState.putInt(STATE_RECIPE_ID, recipeId);
 
         super.onSaveInstanceState(outState);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        recipeId = savedInstanceState.getLong(STATE_RECIPE_ID);
+        recipeId = savedInstanceState.getInt(STATE_RECIPE_ID);
 
         super.onRestoreInstanceState(savedInstanceState);
     }

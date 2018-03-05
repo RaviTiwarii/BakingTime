@@ -1,4 +1,4 @@
-package com.android.example.bakingtime.adapters;
+package com.android.example.bakingtime.ui.recipedetail;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.android.example.bakingtime.R;
 import com.android.example.bakingtime.data.model.Step;
+import com.android.example.bakingtime.ui.OnListItemClickListener;
 
 import java.util.List;
 
@@ -23,21 +24,28 @@ public class StepAdapter extends RecyclerView.Adapter<StepAdapter.ViewHolder> {
         this.listener = listener;
     }
 
+    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.list_item_recipe_step, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.bind(steps.get(position));
     }
 
     @Override
     public int getItemCount() {
         return steps.size();
+    }
+
+    public void setSteps(@NonNull final List<Step> steps) {
+        this.steps.clear();
+        this.steps.addAll(steps);
+        notifyDataSetChanged();
     }
 
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

@@ -1,4 +1,4 @@
-package com.android.example.bakingtime.adapters;
+package com.android.example.bakingtime.ui;
 
 import android.support.annotation.NonNull;
 

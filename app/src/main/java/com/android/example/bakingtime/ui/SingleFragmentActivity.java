@@ -1,4 +1,4 @@
-package com.android.example.bakingtime.activities;
+package com.android.example.bakingtime.ui;
 
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;

@@ -19,17 +19,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+/**
+ * This class represents the local in memory data store for the recipes.
+ *
+ * @author Ravi Tiwari
+ * @version 1.0
+ * @since 1.0
+ */
 public class RecipeStore {
 
     private static final String LOG_TAG = RecipeStore.class.getSimpleName();
     private static final String FILE_NAME = "baking.json";
-
     private static RecipeStore instance;
-
     private final List<Recipe> recipes = new ArrayList<>();
-    private final Map<Long, Recipe> recipesMap = new HashMap<>();
+    private final Map<Integer, Recipe> recipesMap = new HashMap<>();
 
-    private RecipeStore(@NonNull final Context context) {
+    /**
+     * Constructor of RecipeStore
+     *
+     * @param context the app context.
+     */
+    private RecipeStore(@NonNull Context context) {
         InputStream stream = null;
         try {
             stream = context.getAssets().open(FILE_NAME);
@@ -43,18 +53,29 @@ public class RecipeStore {
                 try {
                     stream.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Log.e(LOG_TAG, "Error on closing stream " + e);
                 }
             }
         }
     }
 
+    /**
+     * This method returns the singleton instance of RecipeStore
+     *
+     * @param context The app context
+     * @return instance of recipe store
+     */
     public static RecipeStore get(@NonNull final Context context) {
-        if (instance == null)
-            instance = new RecipeStore(context);
+        if (instance == null) instance = new RecipeStore(context);
         return instance;
     }
 
+    /**
+     * This method reads the json data from input stream and parse recipes.
+     *
+     * @param stream The given input stream
+     * @throws JSONException when data is invalid
+     */
     private void parse(@NonNull final InputStream stream) throws JSONException {
         String jsonString = new Scanner(stream).useDelimiter("\\A").next();
         JSONArray jsonArray = new JSONArray(jsonString);
@@ -66,13 +87,24 @@ public class RecipeStore {
         }
     }
 
+    /**
+     * This method returns the list of recipes.
+     *
+     * @return the list of recipes
+     */
     @NonNull
     public List<Recipe> getRecipes() {
         return recipes;
     }
 
+    /**
+     * This method finds and returns recipe by its id, returns null if recipe not found.
+     *
+     * @param id The recipe id
+     * @return recipe object
+     */
     @Nullable
-    public Recipe getRecipe(long id) {
+    public Recipe getRecipe(int id) {
         return recipesMap.get(id);
     }
 }

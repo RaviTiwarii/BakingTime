@@ -1,7 +1,8 @@
-package com.android.example.bakingtime.fragments;
+package com.android.example.bakingtime.ui.step;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -45,19 +46,18 @@ public class StepFragment extends Fragment {
     private SimpleExoPlayer player;
     private ImageView stepThumbnailView;
     private TextView noVideoMessageView;
-    private TextView noThumbnailMessageView;
     private TextView stepDescriptionView;
 
-    private long recipeId;
-    private long stepId;
+    private int recipeId;
+    private int stepId;
     private long playbackPosition = 0;
     private int currentWindow = 0;
     private boolean playWhenReady = true;
 
-    public static StepFragment newInstance(final long recipeId, final long stepId) {
+    public static StepFragment newInstance(final int recipeId, final int stepId) {
         Bundle args = new Bundle();
-        args.putLong(ARG_RECIPE_ID, recipeId);
-        args.putLong(ARG_STEP_ID, stepId);
+        args.putInt(ARG_RECIPE_ID, recipeId);
+        args.putInt(ARG_STEP_ID, stepId);
 
         StepFragment fragment = new StepFragment();
         fragment.setArguments(args);
@@ -74,10 +74,12 @@ public class StepFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Retain this fragment across configuration changes.
+        setRetainInstance(true);
         Bundle args = getArguments();
         if (args != null && args.containsKey(ARG_RECIPE_ID) && args.containsKey(ARG_STEP_ID)) {
-            recipeId = args.getLong(ARG_RECIPE_ID);
-            stepId = args.getLong(ARG_STEP_ID);
+            recipeId = args.getInt(ARG_RECIPE_ID);
+            stepId = args.getInt(ARG_STEP_ID);
         }
     }
 
@@ -90,64 +92,55 @@ public class StepFragment extends Fragment {
         playerView = view.findViewById(R.id.player_view);
         stepThumbnailView = view.findViewById(R.id.iv_step_thumbnail);
         noVideoMessageView = view.findViewById(R.id.tv_no_video);
-        noThumbnailMessageView = view.findViewById(R.id.tv_no_thumbnail);
         stepDescriptionView = view.findViewById(R.id.tv_step_description);
 
         Recipe recipe = RecipeStore.get(context).getRecipe(recipeId);
         if (recipe != null) {
             step = recipe.getStep(stepId);
-            if (stepThumbnailView == null) {
-                if (step.getVideoUrl().isEmpty()) {
-                    showNoVideoView();
-                } else {
-                    showVideoView();
-                    hideSystemUi();
-                    initializePlayer();
-                }
-            } else {
-                showStepView();
-            }
+            if (isLandscapeMode())
+                showLandscapeView();
+            else
+                showPortraitView();
         }
         return view;
     }
 
-    private void showStepView() {
+    private void showLandscapeView() {
+        hideSystemUi();
+        showStepVideo();
+    }
+
+    private void showPortraitView() {
+        showStepVideo();
+        showStepThumbnail();
+        stepDescriptionView.setText(step.getDescription());
+    }
+
+    private void showStepVideo() {
         if (step.getVideoUrl().isEmpty()) {
             showNoVideoView();
         } else {
             showVideoView();
             initializePlayer();
         }
+    }
 
+    private void showStepThumbnail() {
         String thumbnailUrl = step.getThumbnailUrl();
-        if (thumbnailUrl.isEmpty()) {
-            showNoThumbnailView();
-        } else {
-            showThumbnailView();
+        if (thumbnailUrl.isEmpty())
+            stepThumbnailView.setImageResource(R.drawable.placeholder);
+        else
             Picasso.with(context).load(thumbnailUrl).into(stepThumbnailView);
-        }
-
-        stepDescriptionView.setText(step.getDescription());
     }
 
     private void showNoVideoView() {
-        playerView.setVisibility(View.INVISIBLE);
+        playerView.setVisibility(View.GONE);
         noVideoMessageView.setVisibility(View.VISIBLE);
     }
 
     private void showVideoView() {
-        noVideoMessageView.setVisibility(View.INVISIBLE);
+        noVideoMessageView.setVisibility(View.GONE);
         playerView.setVisibility(View.VISIBLE);
-    }
-
-    private void showNoThumbnailView() {
-        stepThumbnailView.setVisibility(View.INVISIBLE);
-        noThumbnailMessageView.setVisibility(View.VISIBLE);
-    }
-
-    private void showThumbnailView() {
-        noThumbnailMessageView.setVisibility(View.INVISIBLE);
-        stepThumbnailView.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -214,8 +207,8 @@ public class StepFragment extends Fragment {
     }
 
     private void saveState(@NonNull Bundle outState) {
-        outState.putLong(EXTRA_RECIPE_ID, recipeId);
-        outState.putLong(EXTRA_STEP_ID, stepId);
+        outState.putInt(EXTRA_RECIPE_ID, recipeId);
+        outState.putInt(EXTRA_STEP_ID, stepId);
         outState.putBoolean(EXTRA_PLAY_WHEN_READY, playWhenReady);
         outState.putInt(EXTRA_CURRENT_WINDOW, currentWindow);
         outState.putLong(EXTRA_PLAYBACK_POSITION, playbackPosition);
@@ -229,10 +222,10 @@ public class StepFragment extends Fragment {
 
     private void restoreState(@NonNull Bundle savedInstanceState) {
         if (savedInstanceState.containsKey(EXTRA_RECIPE_ID))
-            recipeId = savedInstanceState.getLong(EXTRA_RECIPE_ID);
+            recipeId = savedInstanceState.getInt(EXTRA_RECIPE_ID);
 
         if (savedInstanceState.containsKey(EXTRA_STEP_ID))
-            stepId = savedInstanceState.getLong(EXTRA_STEP_ID);
+            stepId = savedInstanceState.getInt(EXTRA_STEP_ID);
 
         if (savedInstanceState.containsKey(EXTRA_PLAY_WHEN_READY))
             playWhenReady = savedInstanceState.getBoolean(EXTRA_PLAY_WHEN_READY);
@@ -252,5 +245,9 @@ public class StepFragment extends Fragment {
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+    }
+
+    private boolean isLandscapeMode() {
+        return getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
     }
 }

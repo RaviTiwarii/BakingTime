@@ -8,9 +8,9 @@ import com.android.example.bakingtime.data.model.Ingredient;
 
 import java.util.List;
 
-public final class Utils {
+public final class RecipeUtil {
 
-    private Utils() {
+    private RecipeUtil() {
     }
 
     public static String formatIngredients(@NonNull final Context context,

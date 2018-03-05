@@ -13,33 +13,31 @@ import static org.junit.Assert.assertNotNull;
 
 public class RecipeStoreTest {
 
-    private Context context;
+    private RecipeStore recipeStore;
 
     @Before
     public void setUp() {
-        this.context = InstrumentationRegistry.getTargetContext();
+        Context context = InstrumentationRegistry.getTargetContext();
+        recipeStore = RecipeStore.get(context);
     }
 
     @Test
     public void nullDirectory() {
-        RecipeStore store = new RecipeStore(context, null);
-        assertNotNull(store);
-        assertNotNull(store.getRecipes());
-        assertEquals(0, store.getRecipes().size());
+        assertNotNull(recipeStore);
+        assertNotNull(recipeStore.getRecipes());
+        assertEquals(0, recipeStore.getRecipes().size());
     }
 
     @Test
     public void count() throws Exception {
-        RecipeStore store = new RecipeStore(context, "baking.json");
-        assertNotNull(store);
-        assertNotNull(store.getRecipes());
-        assertEquals(4, store.getRecipes().size());
+        assertNotNull(recipeStore);
+        assertNotNull(recipeStore.getRecipes());
+        assertEquals(4, recipeStore.getRecipes().size());
     }
 
     @Test
     public void getNutellaPie() {
-        RecipeStore store = new RecipeStore(context, "baking.json");
-        Recipe recipe = store.getRecipe(1);
+        Recipe recipe = recipeStore.getRecipe(1);
         assertNotNull(recipe);
         assertEquals("Nutella Pie", recipe.getName());
     }

@@ -1,4 +1,4 @@
-package com.android.example.bakingtime.fragments;
+package com.android.example.bakingtime.ui.recipelist;
 
 import android.content.Context;
 import android.content.Intent;
@@ -13,10 +13,9 @@ import android.view.ViewGroup;
 import android.widget.GridView;
 
 import com.android.example.bakingtime.R;
-import com.android.example.bakingtime.activities.RecipeActivity;
-import com.android.example.bakingtime.adapters.RecipeAdapter;
-import com.android.example.bakingtime.data.local.RecipeStore;
 import com.android.example.bakingtime.data.model.Recipe;
+import com.android.example.bakingtime.ui.downloader.RecipeDownloader;
+import com.android.example.bakingtime.ui.recipedetail.RecipeActivity;
 
 import java.util.List;
 
@@ -33,8 +32,6 @@ public class RecipeListFragment extends Fragment {
     private Context context;
     private GridView recipeGridView;
     private RecipeAdapter recipeAdapter;
-    private CountingIdlingResource idlingResource =
-            new CountingIdlingResource("RECIPE_DOWNLOADER");
 
     private int gridScrollPosition = 0;
 
@@ -68,11 +65,8 @@ public class RecipeListFragment extends Fragment {
             startActivity(intent);
         });
 
-        idlingResource.increment();
-        List<Recipe> recipes = new RecipeDownloader().download();
-        idlingResource.decrement();
-
-        setupAdapter(recipes);
+        CountingIdlingResource idlingResource = ((RecipeListActivity) context).getCountingIdlingResource();
+        RecipeDownloader.downloadRecipes(context, this::setupRecipeAdapter, idlingResource);
 
         return view;
     }
@@ -93,31 +87,12 @@ public class RecipeListFragment extends Fragment {
             gridScrollPosition = savedInstanceState.getInt(STATE_GRID_SCROLL_POSITION);
     }
 
-    private void setupAdapter(@NonNull final List<Recipe> recipes) {
+    private void setupRecipeAdapter(@NonNull final List<Recipe> recipes) {
         if (recipeAdapter == null) {
-            recipeAdapter = new RecipeAdapter(context, R.layout.list_item_recipe, recipes);
+            recipeAdapter = new RecipeAdapter(context, recipes);
             recipeGridView.setAdapter(recipeAdapter);
         } else {
             recipeAdapter.setRecipes(recipes);
-            recipeAdapter.notifyDataSetChanged();
-        }
-    }
-
-    public CountingIdlingResource getIdlingResource() {
-        return idlingResource;
-    }
-
-    private class RecipeDownloader {
-        List<Recipe> download() {
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-            RecipeStore recipeStore = RecipeStore.get(context);
-            List<Recipe> recipes = recipeStore.getRecipes();
-
-            return recipes;
         }
     }
 }
