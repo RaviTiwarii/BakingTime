@@ -13,4 +13,6 @@
     <string name="step_thumbnail">Picture of recipe step</string>
     <string name="recipe_icon">Recipe icon image</string>
     <string name="recipe_not_added_to_widget">Recipe not added to widget</string>
+    <string name="recipe_not_found_message">No recipe found :(</string>
+    <string name="no_internet_message">No internet connection</string>
 </resources>

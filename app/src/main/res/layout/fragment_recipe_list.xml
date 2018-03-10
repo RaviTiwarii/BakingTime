@@ -11,6 +11,16 @@
         android:layout_height="match_parent"
         tools:listitem="@layout/list_item_recipe" />
 
+    <TextView
+        android:id="@+id/tv_no_recipe"
+        style="@style/TextAppearance.AppCompat.Title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:text="@string/recipe_not_found_message"
+        android:textColor="@android:color/holo_red_dark" />
+
     <ProgressBar
         android:id="@+id/loading_indicator"
         android:layout_width="wrap_content"
