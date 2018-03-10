@@ -5,18 +5,17 @@
     android:layout_height="match_parent"
     tools:context=".ui.recipelist.RecipeListActivity">
 
-    <GridView
-        android:id="@+id/grid_view_recipes"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_recipes"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="5dp"
-        android:clickable="true"
-        android:drawSelectorOnTop="true"
-        android:focusable="true"
-        android:gravity="center"
-        android:numColumns="1"
-        android:stretchMode="columnWidth"
-        android:verticalSpacing="5dp"
         tools:listitem="@layout/list_item_recipe" />
+
+    <ProgressBar
+        android:id="@+id/loading_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
 
 </FrameLayout>

@@ -1,67 +1,92 @@
 package com.android.example.bakingtime.ui.recipelist;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.example.bakingtime.R;
 import com.android.example.bakingtime.data.model.Recipe;
+import com.android.example.bakingtime.ui.OnListItemClickListener;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-public class RecipeAdapter extends ArrayAdapter<Recipe> {
+/**
+ * Adapter for the recipes recycler view.
+ *
+ * @author Ravi Tiwari
+ * @version 1.0
+ * @since 1.0
+ */
+public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder> {
 
-    @NonNull
-    private final Context context;
     @NonNull
     private final List<Recipe> recipes;
+    @NonNull
+    private final OnListItemClickListener<Recipe> listener;
 
-    public RecipeAdapter(@NonNull Context context, @NonNull List<Recipe> recipes) {
-        super(context, R.layout.list_item_recipe, recipes);
-        this.context = context;
+    public RecipeAdapter(@NonNull List<Recipe> recipes,
+                         @NonNull OnListItemClickListener<Recipe> listener) {
         this.recipes = recipes;
+        this.listener = listener;
     }
 
     @NonNull
     @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        ViewHolder holder;
-
-        if (convertView == null) {
-            convertView = LayoutInflater.from(context)
-                    .inflate(R.layout.list_item_recipe, parent, false);
-            holder = new ViewHolder(convertView);
-            convertView.setTag(holder);
-        } else {
-            holder = (ViewHolder) convertView.getTag();
-        }
-
-        Recipe currentRecipe = recipes.get(position);
-        holder.bind(currentRecipe);
-
-        return convertView;
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.list_item_recipe, parent, false);
+        return new ViewHolder(view);
     }
 
-    public void setRecipes(@NonNull final List<Recipe> recipes) {
+    @Override
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        holder.bind(recipes.get(position));
+    }
+
+    @Override
+    public int getItemCount() {
+        return recipes.size();
+    }
+
+    public void setRecipes(@NonNull List<Recipe> recipes) {
         this.recipes.clear();
         this.recipes.addAll(recipes);
-        notifyDataSetChanged();
     }
 
-    private static class ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        private final ImageView recipeImageView;
         private final TextView recipeNameTextView;
 
-        ViewHolder(@NonNull final View view) {
-            recipeNameTextView = view.findViewById(R.id.tv_recipe_name);
+        ViewHolder(View itemView) {
+            super(itemView);
+            itemView.setOnClickListener(this);
+            recipeImageView = itemView.findViewById(R.id.recipe_image);
+            recipeNameTextView = itemView.findViewById(R.id.tv_recipe_name);
         }
 
         void bind(@NonNull final Recipe recipe) {
+            if (TextUtils.isEmpty(recipe.getImageUrl()))
+                recipeImageView.setImageResource(R.drawable.ic_recipes);
+            else
+                Picasso.with(recipeImageView.getContext())
+                        .load(recipe.getImageUrl())
+                        .placeholder(R.drawable.ic_recipes)
+                        .error(R.drawable.ic_recipes)
+                        .into(recipeImageView);
+
             recipeNameTextView.setText(recipe.getName());
+        }
+
+        @Override
+        public void onClick(View v) {
+            Recipe currentRecipe = recipes.get(getAdapterPosition());
+            listener.onItemClick(currentRecipe);
         }
     }
 }

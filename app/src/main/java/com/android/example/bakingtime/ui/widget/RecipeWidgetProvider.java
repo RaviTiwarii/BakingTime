@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.widget.RemoteViews;
 
 import com.android.example.bakingtime.R;
-import com.android.example.bakingtime.data.local.RecipeStore;
 import com.android.example.bakingtime.data.local.SharedPreferencesWidgetRecipe;
 import com.android.example.bakingtime.data.model.Recipe;
 import com.android.example.bakingtime.ui.recipedetail.RecipeActivity;
@@ -20,25 +19,21 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
 
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
                                 int appWidgetId) {
-
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.recipe_widget);
 
-        int recipeId = new SharedPreferencesWidgetRecipe(context).get();
-        if (recipeId == -1) {
+        Recipe recipe = new SharedPreferencesWidgetRecipe(context).getRecipe();
+        if (recipe == null) {
             views.setTextViewText(R.id.tv_recipe_name, context.getString(R.string.no_recipe_in_widget));
         } else {
-            Recipe recipe = RecipeStore.get(context).getRecipe(recipeId);
-            if (recipe != null) {
-                views.setTextViewText(R.id.tv_recipe_name, recipe.getName());
-                Intent intent = new Intent(context, RecipeWidgetRemoteViewService.class);
-                views.setRemoteAdapter(R.id.list_view_ingredients, intent);
+            views.setTextViewText(R.id.tv_recipe_name, recipe.getName());
+            Intent intent = new Intent(context, RecipeWidgetRemoteViewService.class);
+            views.setRemoteAdapter(R.id.list_view_ingredients, intent);
 
-                Intent recipeIntent = RecipeActivity.newIntent(context, recipeId);
-                PendingIntent pendingIntent =
-                        PendingIntent.getActivity(context, 0, recipeIntent, 0);
-                views.setOnClickPendingIntent(R.id.tv_recipe_name, pendingIntent);
-            }
+            Intent recipeIntent = RecipeActivity.newIntent(context, recipe);
+            PendingIntent pendingIntent =
+                    PendingIntent.getActivity(context, 0, recipeIntent, 0);
+            views.setOnClickPendingIntent(R.id.tv_recipe_name, pendingIntent);
         }
 
         // Instruct the widget manager to update the widget

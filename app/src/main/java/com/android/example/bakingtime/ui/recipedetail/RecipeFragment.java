@@ -5,11 +5,10 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,7 +22,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.example.bakingtime.R;
-import com.android.example.bakingtime.data.local.RecipeStore;
 import com.android.example.bakingtime.data.local.SharedPreferencesWidgetRecipe;
 import com.android.example.bakingtime.data.model.Recipe;
 import com.android.example.bakingtime.data.model.Step;
@@ -34,15 +32,20 @@ import static android.support.v7.widget.DividerItemDecoration.VERTICAL;
 
 public class RecipeFragment extends Fragment {
 
-    private static final String ARG_RECIPE_ID = "com.android.example.bakingtime.extra.recipe_id";
+    private static final String ARG_RECIPE = "arg.recipe";
+    private static final String STATE_STEP_SCROLL = "state.step_scroll";
 
     private Context context;
     private Recipe recipe;
     private Callback callback;
+    private RecyclerView stepsRecyclerView;
+    private Parcelable stepListState;
 
-    public static RecipeFragment newInstance(int recipeId) {
+    @NonNull
+    public static RecipeFragment newInstance(@NonNull final Recipe recipe) {
         Bundle args = new Bundle();
-        args.putInt(ARG_RECIPE_ID, recipeId);
+        args.putParcelable(ARG_RECIPE, recipe);
+
         RecipeFragment fragment = new RecipeFragment();
         fragment.setArguments(args);
         return fragment;
@@ -64,11 +67,8 @@ public class RecipeFragment extends Fragment {
         setHasOptionsMenu(true);
 
         Bundle args = getArguments();
-        if (args != null && args.containsKey(ARG_RECIPE_ID)) {
-            int recipeId = args.getInt(ARG_RECIPE_ID);
-            RecipeStore store = RecipeStore.get(context);
-            recipe = store.getRecipe(recipeId);
-        }
+        if (args != null && args.containsKey(ARG_RECIPE))
+            recipe = args.getParcelable(ARG_RECIPE);
     }
 
     @Nullable
@@ -78,18 +78,33 @@ public class RecipeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_recipe, container, false);
 
         TextView ingredientsTextView = view.findViewById(R.id.tv_ingredients);
-        RecyclerView stepsRecyclerView = view.findViewById(R.id.rv_recipe_steps);
+        stepsRecyclerView = view.findViewById(R.id.rv_recipe_steps);
+
+        if (savedInstanceState != null && savedInstanceState.containsKey(STATE_STEP_SCROLL))
+            stepListState = savedInstanceState.getParcelable(STATE_STEP_SCROLL);
 
         if (recipe != null) {
-            setFragmentTitle(recipe.getName());
+            getActivity().setTitle(recipe.getName());
+
             ingredientsTextView.setText(RecipeUtil.formatIngredients(context, recipe.getIngredients()));
 
-            stepsRecyclerView.setLayoutManager(new LinearLayoutManager(context));
+            LinearLayoutManager layoutManager = new LinearLayoutManager(context);
+            if (stepListState != null)
+                layoutManager.onRestoreInstanceState(stepListState);
+
+            stepsRecyclerView.setLayoutManager(layoutManager);
             stepsRecyclerView.setHasFixedSize(true);
             stepsRecyclerView.addItemDecoration(new DividerItemDecoration(context, VERTICAL));
             stepsRecyclerView.setAdapter(new StepAdapter(recipe.getSteps(), callback::onStepSelected));
         }
         return view;
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        stepListState = stepsRecyclerView.getLayoutManager().onSaveInstanceState();
+        outState.putParcelable(STATE_STEP_SCROLL, stepListState);
     }
 
     @Override
@@ -116,31 +131,22 @@ public class RecipeFragment extends Fragment {
     }
 
     private void addToWidgetsAndUpdateWidget() {
-        new SharedPreferencesWidgetRecipe(context).put(recipe.getId());
-        Toast.makeText(context, R.string.recipe_added_to_widget, Toast.LENGTH_SHORT).show();
+        boolean isAdded = new SharedPreferencesWidgetRecipe(context).putRecipe(recipe);
+        if (isAdded) {
+            Toast.makeText(context, R.string.recipe_added_to_widget, Toast.LENGTH_SHORT).show();
+            ComponentName componentName = new ComponentName(context, RecipeWidgetProvider.class);
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+            int[] appWidgetIds = appWidgetManager.getAppWidgetIds(componentName);
 
-        ComponentName componentName = new ComponentName(context, RecipeWidgetProvider.class);
-        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-        int[] appWidgetIds = appWidgetManager.getAppWidgetIds(componentName);
+            Intent intent = new Intent(context, RecipeWidgetProvider.class);
+            intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds);
+            context.sendBroadcast(intent);
 
-        Intent intent = new Intent(context, RecipeWidgetProvider.class);
-        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds);
-        context.sendBroadcast(intent);
-
-        appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.list_view_ingredients);
-    }
-
-    private void setFragmentTitle(@NonNull final String title) {
-        ActionBar actionBar = getActionBar();
-        if (actionBar != null) actionBar.setTitle(title);
-    }
-
-    @Nullable
-    private ActionBar getActionBar() {
-        AppCompatActivity activity = (AppCompatActivity) getActivity();
-        if (activity != null) return activity.getSupportActionBar();
-        else return null;
+            appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.list_view_ingredients);
+        } else {
+            Toast.makeText(context, R.string.recipe_not_added_to_widget, Toast.LENGTH_SHORT).show();
+        }
     }
 
     @FunctionalInterface

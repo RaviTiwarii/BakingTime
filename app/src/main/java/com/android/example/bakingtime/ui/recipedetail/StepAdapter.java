@@ -42,12 +42,6 @@ public class StepAdapter extends RecyclerView.Adapter<StepAdapter.ViewHolder> {
         return steps.size();
     }
 
-    public void setSteps(@NonNull final List<Step> steps) {
-        this.steps.clear();
-        this.steps.addAll(steps);
-        notifyDataSetChanged();
-    }
-
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private final TextView stepDescriptionTextView;
@@ -55,7 +49,6 @@ public class StepAdapter extends RecyclerView.Adapter<StepAdapter.ViewHolder> {
         ViewHolder(View itemView) {
             super(itemView);
             itemView.setOnClickListener(this);
-
             stepDescriptionTextView = itemView.findViewById(R.id.tv_step_short_description);
         }
 

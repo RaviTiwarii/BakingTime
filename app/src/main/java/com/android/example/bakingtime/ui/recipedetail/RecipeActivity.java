@@ -10,6 +10,7 @@ import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 
 import com.android.example.bakingtime.R;
+import com.android.example.bakingtime.data.model.Recipe;
 import com.android.example.bakingtime.data.model.Step;
 import com.android.example.bakingtime.ui.SingleFragmentActivity;
 import com.android.example.bakingtime.ui.step.StepFragment;
@@ -23,10 +24,10 @@ import com.android.example.bakingtime.ui.step.StepPagerActivity;
  */
 public class RecipeActivity extends SingleFragmentActivity implements RecipeFragment.Callback {
 
-    private static final String EXTRA_RECIPE_ID = "com.android.example.bakingtime.extra.recipe_id";
-    private static final String STATE_RECIPE_ID = "com.android.example.bakingtime.state.recipe_id";
+    private static final String EXTRA_RECIPE = "extra.recipe";
+    private static final String STATE_RECIPE = "state.recipe";
 
-    private int recipeId = -1;
+    private Recipe recipe;
 
     /**
      * Returns the intent to start this activity.
@@ -35,9 +36,10 @@ public class RecipeActivity extends SingleFragmentActivity implements RecipeFrag
      * @param recipeId recipe id
      * @return intent to start this activity
      */
-    public static Intent newIntent(@NonNull final Context context, final int recipeId) {
+    @NonNull
+    public static Intent newIntent(@NonNull final Context context, @NonNull final Recipe recipe) {
         Intent intent = new Intent(context, RecipeActivity.class);
-        intent.putExtra(EXTRA_RECIPE_ID, recipeId);
+        intent.putExtra(EXTRA_RECIPE, recipe);
         return intent;
     }
 
@@ -63,13 +65,13 @@ public class RecipeActivity extends SingleFragmentActivity implements RecipeFrag
         if (actionBar != null) actionBar.setDisplayHomeAsUpEnabled(true);
 
         Bundle extras = getIntent().getExtras();
-        if (recipeId != -1) {
-            return RecipeFragment.newInstance(recipeId);
-        } else if (extras != null && extras.containsKey(EXTRA_RECIPE_ID)) {
-            recipeId = extras.getInt(EXTRA_RECIPE_ID);
-            return RecipeFragment.newInstance(recipeId);
+        if (recipe != null) {
+            return RecipeFragment.newInstance(recipe);
+        } else if (extras != null && extras.containsKey(EXTRA_RECIPE)) {
+            recipe = extras.getParcelable(EXTRA_RECIPE);
+            return RecipeFragment.newInstance(recipe);
         } else {
-            throw new IllegalArgumentException("No recipe id found");
+            throw new IllegalArgumentException("No recipe found");
         }
     }
 
@@ -87,15 +89,13 @@ public class RecipeActivity extends SingleFragmentActivity implements RecipeFrag
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putInt(STATE_RECIPE_ID, recipeId);
-
+        outState.putParcelable(STATE_RECIPE, recipe);
         super.onSaveInstanceState(outState);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        recipeId = savedInstanceState.getInt(STATE_RECIPE_ID);
-
+        recipe = savedInstanceState.getParcelable(STATE_RECIPE);
         super.onRestoreInstanceState(savedInstanceState);
     }
 
@@ -103,10 +103,10 @@ public class RecipeActivity extends SingleFragmentActivity implements RecipeFrag
     public void onStepSelected(@NonNull Step step) {
         boolean deviceIsPhone = findViewById(R.id.detail_fragment_container) == null;
         if (deviceIsPhone) {
-            Intent intent = StepPagerActivity.newIntent(this, recipeId, step.getId());
+            Intent intent = StepPagerActivity.newIntent(this, recipe, step);
             startActivity(intent);
         } else {
-            Fragment fragment = StepFragment.newInstance(recipeId, step.getId());
+            Fragment fragment = StepFragment.newInstance(step);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.detail_fragment_container, fragment)
                     .commit();

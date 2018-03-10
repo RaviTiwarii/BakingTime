@@ -14,7 +14,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
 import com.android.example.bakingtime.R;
-import com.android.example.bakingtime.data.local.RecipeStore;
 import com.android.example.bakingtime.data.model.Recipe;
 import com.android.example.bakingtime.data.model.Step;
 
@@ -23,21 +22,20 @@ import java.util.List;
 
 public class StepPagerActivity extends AppCompatActivity {
 
-    private static final String EXTRA_RECIPE_ID = "com.android.example.bakingtime.extra_recipe_id";
-    private static final String EXTRA_STEP_ID = "com.android.example.bakingtime.extra_step_id";
+    private static final String EXTRA_RECIPE = "com.android.example.bakingtime.extra_recipe_id";
+    private static final String EXTRA_STEP = "com.android.example.bakingtime.extra_step_id";
 
     private ViewPager viewPager;
     private Recipe recipe;
-    private List<Step> steps = new ArrayList<>();
+    private Step currentStep;
+    private List<Step> steps;
 
-    private int stepId;
-    private int currentStepIndex;
-
-    public static Intent newIntent(@NonNull final Context context, final int recipeId,
-                                   final int stepId) {
+    public static Intent newIntent(@NonNull final Context context,
+                                   @NonNull final Recipe recipe,
+                                   @NonNull final Step step) {
         Intent intent = new Intent(context, StepPagerActivity.class);
-        intent.putExtra(EXTRA_RECIPE_ID, recipeId);
-        intent.putExtra(EXTRA_STEP_ID, stepId);
+        intent.putExtra(EXTRA_RECIPE, recipe);
+        intent.putExtra(EXTRA_STEP, step);
         return intent;
     }
 
@@ -47,11 +45,10 @@ public class StepPagerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_step_pager);
 
         Bundle extras = getIntent().getExtras();
-        if (extras != null && extras.containsKey(EXTRA_RECIPE_ID)
-                && extras.containsKey(EXTRA_STEP_ID)) {
-            int recipeId = extras.getInt(EXTRA_RECIPE_ID);
-            stepId = extras.getInt(EXTRA_STEP_ID);
-            recipe = RecipeStore.get(this).getRecipe(recipeId);
+        if (extras != null && extras.containsKey(EXTRA_RECIPE)
+                && extras.containsKey(EXTRA_STEP)) {
+            recipe = extras.getParcelable(EXTRA_RECIPE);
+            currentStep = extras.getParcelable(EXTRA_STEP);
             steps = recipe != null ? recipe.getSteps() : new ArrayList<>();
         }
 
@@ -67,14 +64,7 @@ public class StepPagerActivity extends AppCompatActivity {
     private void initializeViews() {
         viewPager = findViewById(R.id.step_view_pager);
         setUpViewPager();
-
-        for (int i = 0; i < steps.size(); i++) {
-            if (steps.get(i).getId() == stepId) {
-                currentStepIndex = i;
-                break;
-            }
-        }
-        viewPager.setCurrentItem(currentStepIndex);
+        showSelectedStepOnViewPager();
     }
 
     private void setUpViewPager() {
@@ -83,7 +73,7 @@ public class StepPagerActivity extends AppCompatActivity {
             @Override
             public Fragment getItem(int position) {
                 Step step = steps.get(position);
-                return StepFragment.newInstance(recipe.getId(), step.getId());
+                return StepFragment.newInstance(step);
             }
 
             @Override
@@ -91,6 +81,15 @@ public class StepPagerActivity extends AppCompatActivity {
                 return steps.size();
             }
         });
+    }
+
+    private void showSelectedStepOnViewPager() {
+        for (int i = 0; i < steps.size(); i++) {
+            if (steps.get(i).getId() == currentStep.getId()) {
+                viewPager.setCurrentItem(i);
+                break;
+            }
+        }
     }
 
     @Override

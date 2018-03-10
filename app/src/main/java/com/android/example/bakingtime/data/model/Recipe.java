@@ -1,5 +1,7 @@
 package com.android.example.bakingtime.data.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -11,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import paperparcel.PaperParcel;
+
 /**
  * Model class for recipe.
  * This class represents a recipe.
@@ -19,7 +23,10 @@ import java.util.Locale;
  * @version 1.0
  * @since 1.0
  */
-public class Recipe {
+@PaperParcel
+public class Recipe implements Parcelable {
+
+    public static final Creator<Recipe> CREATOR = PaperParcelRecipe.CREATOR;
 
     private static final String KEY_ID = "id";
     private static final String KEY_NAME = "name";
@@ -49,8 +56,8 @@ public class Recipe {
      * @param servings    The total number of servings
      * @param imageUrl    The url for recipe picture
      */
-    private Recipe(int id, @NonNull String name, @NonNull List<Ingredient> ingredients,
-                   @NonNull List<Step> steps, int servings, @NonNull String imageUrl) {
+    public Recipe(int id, @NonNull String name, @NonNull List<Ingredient> ingredients,
+                  @NonNull List<Step> steps, int servings, @NonNull String imageUrl) {
         this.id = id;
         this.name = name;
         this.ingredients = ingredients;
@@ -67,7 +74,8 @@ public class Recipe {
      * @throws JSONException When data is invalid
      */
     @NonNull
-    public static Recipe fromJson(@NonNull final JSONObject jsonObject) throws JSONException {
+    public static Recipe fromJson(@NonNull final String jsonString) throws JSONException {
+        JSONObject jsonObject = new JSONObject(jsonString);
         int id = jsonObject.getInt(KEY_ID);
         int servings = jsonObject.getInt(KEY_SERVINGS);
         String name = jsonObject.getString(KEY_NAME);
@@ -204,6 +212,49 @@ public class Recipe {
     @NonNull
     public String getImageUrl() {
         return imageUrl;
+    }
+
+    @Nullable
+    public String toJson() {
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put(KEY_ID, id);
+            jsonObject.put(KEY_NAME, name);
+            jsonObject.put(KEY_INGREDIENTS, ingredientJsonArray());
+            jsonObject.put(KEY_STEPS, stepJsonArray());
+            jsonObject.put(KEY_SERVINGS, servings);
+            jsonObject.put(KEY_IMAGE, imageUrl);
+            return jsonObject.toString(2);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @NonNull
+    private JSONArray ingredientJsonArray() throws JSONException {
+        JSONArray ingredientsJsonArray = new JSONArray();
+        for (Ingredient ingredient : ingredients)
+            ingredientsJsonArray.put(new JSONObject(ingredient.toJson()));
+        return ingredientsJsonArray;
+    }
+
+    @NonNull
+    private JSONArray stepJsonArray() throws JSONException {
+        JSONArray stepJsonArray = new JSONArray();
+        for (Step step : steps)
+            stepJsonArray.put(new JSONObject(step.toJson()));
+        return stepJsonArray;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        PaperParcelRecipe.writeToParcel(this, dest, flags);
     }
 
     /**

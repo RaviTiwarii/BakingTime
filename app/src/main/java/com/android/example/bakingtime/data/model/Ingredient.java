@@ -1,11 +1,16 @@
 package com.android.example.bakingtime.data.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Locale;
+
+import paperparcel.PaperParcel;
 
 /**
  * Model class for ingredient.
@@ -15,7 +20,10 @@ import java.util.Locale;
  * @version 1.0
  * @since 1.0
  */
-public class Ingredient {
+@PaperParcel
+public class Ingredient implements Parcelable {
+
+    public static final Creator<Ingredient> CREATOR = PaperParcelIngredient.CREATOR;
 
     private static final String KEY_NAME = "ingredient";
     private static final String KEY_MEASURE = "measure";
@@ -35,7 +43,7 @@ public class Ingredient {
      * @param measure  The measurement of ingredient
      * @param quantity The quantity of ingredient
      */
-    private Ingredient(@NonNull String name, @NonNull String measure, @NonNull String quantity) {
+    public Ingredient(@NonNull String name, @NonNull String measure, @NonNull String quantity) {
         this.quantity = quantity;
         this.measure = measure;
         this.name = name;
@@ -84,6 +92,30 @@ public class Ingredient {
     @NonNull
     public String getQuantity() {
         return quantity;
+    }
+
+    @Nullable
+    public String toJson() {
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put(KEY_QUANTITY, quantity);
+            jsonObject.put(KEY_MEASURE, measure);
+            jsonObject.put(KEY_NAME, name);
+            return jsonObject.toString(2);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        PaperParcelIngredient.writeToParcel(this, dest, flags);
     }
 
     /**

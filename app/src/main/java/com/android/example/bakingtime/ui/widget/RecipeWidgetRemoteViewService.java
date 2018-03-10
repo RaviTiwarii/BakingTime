@@ -7,7 +7,6 @@ import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
 import com.android.example.bakingtime.R;
-import com.android.example.bakingtime.data.local.RecipeStore;
 import com.android.example.bakingtime.data.local.SharedPreferencesWidgetRecipe;
 import com.android.example.bakingtime.data.model.Ingredient;
 import com.android.example.bakingtime.data.model.Recipe;
@@ -15,6 +14,10 @@ import com.android.example.bakingtime.data.model.Recipe;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Ravi Tiwari
+ * @version 1.0
+ */
 public class RecipeWidgetRemoteViewService extends RemoteViewsService {
 
     @Override
@@ -56,8 +59,8 @@ public class RecipeWidgetRemoteViewService extends RemoteViewsService {
             Ingredient ingredient = ingredients.get(position);
             String s = context.getString(R.string.ingredient_detail,
                     ingredient.getQuantity(), ingredient.getMeasure(), ingredient.getName());
-            RemoteViews remoteViews =
-                    new RemoteViews(context.getPackageName(), R.layout.cell_wigdet_recipe_ingredient);
+            RemoteViews remoteViews = new RemoteViews(context.getPackageName(),
+                    R.layout.cell_wigdet_recipe_ingredient);
             remoteViews.setTextViewText(R.id.tv_ingredient, s);
             return remoteViews;
         }
@@ -83,11 +86,9 @@ public class RecipeWidgetRemoteViewService extends RemoteViewsService {
         }
 
         private void fetchIngredients() {
-            int recipeId = new SharedPreferencesWidgetRecipe(context).get();
-            if (recipeId != -1) {
-                Recipe recipe = RecipeStore.get(context).getRecipe(recipeId);
-                if (recipe != null) ingredients = recipe.getIngredients();
-            }
+            Recipe recipe = new SharedPreferencesWidgetRecipe(context).getRecipe();
+            if (recipe != null)
+                ingredients = recipe.getIngredients();
         }
     }
 }

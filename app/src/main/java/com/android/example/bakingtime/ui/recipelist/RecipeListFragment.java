@@ -3,37 +3,44 @@ package com.android.example.bakingtime.ui.recipelist;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.test.espresso.idling.CountingIdlingResource;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.GridView;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.android.example.bakingtime.R;
 import com.android.example.bakingtime.data.model.Recipe;
-import com.android.example.bakingtime.ui.downloader.RecipeDownloader;
 import com.android.example.bakingtime.ui.recipedetail.RecipeActivity;
 
-import java.util.List;
+import java.util.ArrayList;
 
 /**
  * This fragment shows the list of recipes.
  *
  * @author Ravi Tiwari
  * @version 1.0
+ * @since 1.0
  */
-public class RecipeListFragment extends Fragment {
+public class RecipeListFragment extends Fragment implements RecipeDownloadTask.TaskCallback<Recipe> {
 
-    private static final String STATE_GRID_SCROLL_POSITION = "state.grid_scroll_position";
+    private static final String RECIPE_URL =
+            "https://d17h27t6h515a5.cloudfront.net/topher/2017/May/59121517_baking/baking.json";
+    private static final String STATE_RECIPE_LIST = "state.recipe_list";
+    private static final String STATE_RECIPE_SCROLL = "state.scroll";
 
     private Context context;
-    private GridView recipeGridView;
+    private ArrayList<Recipe> recipes;
+    private Parcelable recipeListState;
+    private ProgressBar loadingIndicator;
+    private RecyclerView recipeRecyclerView;
     private RecipeAdapter recipeAdapter;
-
-    private int gridScrollPosition = 0;
 
     /**
      * Returns the new instance of this fragment.
@@ -57,16 +64,27 @@ public class RecipeListFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_recipe_list, container, false);
 
-        recipeGridView = view.findViewById(R.id.grid_view_recipes);
-        recipeGridView.smoothScrollToPosition(gridScrollPosition);
-        recipeGridView.setOnItemClickListener((parent, view1, position, id) -> {
-            Recipe recipe = (Recipe) parent.getItemAtPosition(position);
-            Intent intent = RecipeActivity.newIntent(context, recipe.getId());
-            startActivity(intent);
-        });
+        int spanCount = getResources().getInteger(R.integer.recipes_column_count);
+        GridLayoutManager layoutManager = new GridLayoutManager(context, spanCount);
 
-        CountingIdlingResource idlingResource = ((RecipeListActivity) context).getCountingIdlingResource();
-        RecipeDownloader.downloadRecipes(context, this::setupRecipeAdapter, idlingResource);
+        recipeRecyclerView = view.findViewById(R.id.rv_recipes);
+        recipeRecyclerView.setLayoutManager(layoutManager);
+        recipeRecyclerView.setHasFixedSize(true);
+
+        loadingIndicator = view.findViewById(R.id.loading_indicator);
+
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(STATE_RECIPE_SCROLL)) {
+                recipeListState = savedInstanceState.getParcelable(STATE_RECIPE_SCROLL);
+                recipeRecyclerView.getLayoutManager().onRestoreInstanceState(recipeListState);
+            }
+            if (savedInstanceState.containsKey(STATE_RECIPE_LIST)) {
+                recipes = savedInstanceState.getParcelableArrayList(STATE_RECIPE_LIST);
+                setupRecipeAdapter();
+            }
+        } else {
+            new RecipeDownloadTask(this).execute(RECIPE_URL);
+        }
 
         return view;
     }
@@ -74,25 +92,42 @@ public class RecipeListFragment extends Fragment {
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-
-        outState.putInt(STATE_GRID_SCROLL_POSITION, recipeGridView.getFirstVisiblePosition());
+        recipeListState = recipeRecyclerView.getLayoutManager().onSaveInstanceState();
+        outState.putParcelable(STATE_RECIPE_SCROLL, recipeListState);
+        outState.putParcelableArrayList(STATE_RECIPE_LIST, recipes);
     }
 
     @Override
-    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
-
-        if (savedInstanceState != null &&
-                savedInstanceState.containsKey(STATE_GRID_SCROLL_POSITION))
-            gridScrollPosition = savedInstanceState.getInt(STATE_GRID_SCROLL_POSITION);
+    public void onPreExecute() {
+        loadingIndicator.setVisibility(View.VISIBLE);
     }
 
-    private void setupRecipeAdapter(@NonNull final List<Recipe> recipes) {
+    @Override
+    public void onPostExecute(@Nullable final ArrayList<Recipe> recipes) {
+        loadingIndicator.setVisibility(View.GONE);
+        if (recipes == null || recipes.isEmpty()) {
+            showNoRecipeView();
+        } else {
+            this.recipes = recipes;
+            setupRecipeAdapter();
+        }
+    }
+
+    private void showNoRecipeView() {
+        Toast.makeText(context, "No recipe found :(", Toast.LENGTH_SHORT).show();
+    }
+
+    private void setupRecipeAdapter() {
         if (recipeAdapter == null) {
-            recipeAdapter = new RecipeAdapter(context, recipes);
-            recipeGridView.setAdapter(recipeAdapter);
+            recipeAdapter = new RecipeAdapter(recipes, this::onRecipeSelected);
+            recipeRecyclerView.setAdapter(recipeAdapter);
         } else {
             recipeAdapter.setRecipes(recipes);
         }
+    }
+
+    private void onRecipeSelected(@NonNull final Recipe recipe) {
+        Intent intent = RecipeActivity.newIntent(context, recipe);
+        startActivity(intent);
     }
 }

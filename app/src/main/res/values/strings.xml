@@ -12,4 +12,5 @@
     <string name="recipe_added_to_widget">Recipe added to widget</string>
     <string name="step_thumbnail">Picture of recipe step</string>
     <string name="recipe_icon">Recipe icon image</string>
+    <string name="recipe_not_added_to_widget">Recipe not added to widget</string>
 </resources>

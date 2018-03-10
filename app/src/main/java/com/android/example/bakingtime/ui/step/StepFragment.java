@@ -15,8 +15,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.example.bakingtime.R;
-import com.android.example.bakingtime.data.local.RecipeStore;
-import com.android.example.bakingtime.data.model.Recipe;
 import com.android.example.bakingtime.data.model.Step;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
@@ -32,13 +30,11 @@ import com.squareup.picasso.Picasso;
 
 public class StepFragment extends Fragment {
 
-    private static final String ARG_RECIPE_ID = "com.android.example.bakingtime.arg.recipe_id";
-    private static final String ARG_STEP_ID = "com.android.example.bakingtime.arg.step_id";
-    private static final String EXTRA_RECIPE_ID = "com.android.example.bakingtime.extra.recipe_id";
-    private static final String EXTRA_STEP_ID = "com.android.example.bakingtime.extra.step_id";
-    private static final String EXTRA_PLAY_WHEN_READY = "com.android.example.bakingtime.extra.play_when_ready";
-    private static final String EXTRA_CURRENT_WINDOW = "com.android.example.bakingtime.extra.current_window";
-    private static final String EXTRA_PLAYBACK_POSITION = "com.android.example.bakingtime.extra.playback_position";
+    private static final String ARG_STEP = "arg.step";
+    private static final String STATE_STEP = "state.step";
+    private static final String STATE_PLAY_WHEN_READY = "state.play_when_ready";
+    private static final String STATE_CURRENT_WINDOW = "state.current_window";
+    private static final String STATE_PLAYBACK_POSITION = "state.playback_position";
 
     private Context context;
     private Step step;
@@ -48,16 +44,14 @@ public class StepFragment extends Fragment {
     private TextView noVideoMessageView;
     private TextView stepDescriptionView;
 
-    private int recipeId;
-    private int stepId;
     private long playbackPosition = 0;
     private int currentWindow = 0;
     private boolean playWhenReady = true;
 
-    public static StepFragment newInstance(final int recipeId, final int stepId) {
+    @NonNull
+    public static StepFragment newInstance(@NonNull final Step step) {
         Bundle args = new Bundle();
-        args.putInt(ARG_RECIPE_ID, recipeId);
-        args.putInt(ARG_STEP_ID, stepId);
+        args.putParcelable(ARG_STEP, step);
 
         StepFragment fragment = new StepFragment();
         fragment.setArguments(args);
@@ -77,10 +71,8 @@ public class StepFragment extends Fragment {
         // Retain this fragment across configuration changes.
         setRetainInstance(true);
         Bundle args = getArguments();
-        if (args != null && args.containsKey(ARG_RECIPE_ID) && args.containsKey(ARG_STEP_ID)) {
-            recipeId = args.getInt(ARG_RECIPE_ID);
-            stepId = args.getInt(ARG_STEP_ID);
-        }
+        if (args != null && args.containsKey(ARG_STEP))
+            step = args.getParcelable(ARG_STEP);
     }
 
     @Nullable
@@ -94,13 +86,9 @@ public class StepFragment extends Fragment {
         noVideoMessageView = view.findViewById(R.id.tv_no_video);
         stepDescriptionView = view.findViewById(R.id.tv_step_description);
 
-        Recipe recipe = RecipeStore.get(context).getRecipe(recipeId);
-        if (recipe != null) {
-            step = recipe.getStep(stepId);
-            if (isLandscapeMode())
-                showLandscapeView();
-            else
-                showPortraitView();
+        if (step != null) {
+            if (isLandscapeMode()) showLandscapeView();
+            else showPortraitView();
         }
         return view;
     }
@@ -207,11 +195,10 @@ public class StepFragment extends Fragment {
     }
 
     private void saveState(@NonNull Bundle outState) {
-        outState.putInt(EXTRA_RECIPE_ID, recipeId);
-        outState.putInt(EXTRA_STEP_ID, stepId);
-        outState.putBoolean(EXTRA_PLAY_WHEN_READY, playWhenReady);
-        outState.putInt(EXTRA_CURRENT_WINDOW, currentWindow);
-        outState.putLong(EXTRA_PLAYBACK_POSITION, playbackPosition);
+        outState.putParcelable(STATE_STEP, step);
+        outState.putBoolean(STATE_PLAY_WHEN_READY, playWhenReady);
+        outState.putInt(STATE_CURRENT_WINDOW, currentWindow);
+        outState.putLong(STATE_PLAYBACK_POSITION, playbackPosition);
     }
 
     @Override
@@ -221,20 +208,17 @@ public class StepFragment extends Fragment {
     }
 
     private void restoreState(@NonNull Bundle savedInstanceState) {
-        if (savedInstanceState.containsKey(EXTRA_RECIPE_ID))
-            recipeId = savedInstanceState.getInt(EXTRA_RECIPE_ID);
+        if (savedInstanceState.containsKey(STATE_STEP))
+            step = savedInstanceState.getParcelable(STATE_STEP);
 
-        if (savedInstanceState.containsKey(EXTRA_STEP_ID))
-            stepId = savedInstanceState.getInt(EXTRA_STEP_ID);
+        if (savedInstanceState.containsKey(STATE_PLAY_WHEN_READY))
+            playWhenReady = savedInstanceState.getBoolean(STATE_PLAY_WHEN_READY);
 
-        if (savedInstanceState.containsKey(EXTRA_PLAY_WHEN_READY))
-            playWhenReady = savedInstanceState.getBoolean(EXTRA_PLAY_WHEN_READY);
+        if (savedInstanceState.containsKey(STATE_CURRENT_WINDOW))
+            currentWindow = savedInstanceState.getInt(STATE_CURRENT_WINDOW);
 
-        if (savedInstanceState.containsKey(EXTRA_CURRENT_WINDOW))
-            currentWindow = savedInstanceState.getInt(EXTRA_CURRENT_WINDOW);
-
-        if (savedInstanceState.containsKey(EXTRA_PLAYBACK_POSITION))
-            playbackPosition = savedInstanceState.getLong(EXTRA_PLAYBACK_POSITION);
+        if (savedInstanceState.containsKey(STATE_PLAYBACK_POSITION))
+            playbackPosition = savedInstanceState.getLong(STATE_PLAYBACK_POSITION);
     }
 
     @SuppressLint("InlinedApi")

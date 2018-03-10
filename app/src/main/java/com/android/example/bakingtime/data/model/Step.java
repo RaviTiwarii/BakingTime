@@ -1,11 +1,16 @@
 package com.android.example.bakingtime.data.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Locale;
+
+import paperparcel.PaperParcel;
 
 /**
  * Model class for step
@@ -15,7 +20,10 @@ import java.util.Locale;
  * @version 1.0
  * @since 1.0
  */
-public class Step {
+@PaperParcel
+public class Step implements Parcelable {
+
+    public static final Creator<Step> CREATOR = PaperParcelStep.CREATOR;
 
     private static final String KEY_ID = "id";
     private static final String KEY_DESCRIPTION = "description";
@@ -42,8 +50,8 @@ public class Step {
      * @param videoUrl         The video url of step
      * @param thumbnailUrl     The thumbnail url of the step
      */
-    private Step(int id, @NonNull String description, @NonNull String shortDescription,
-                 @NonNull String videoUrl, @NonNull String thumbnailUrl) {
+    public Step(int id, @NonNull String description, @NonNull String shortDescription,
+                @NonNull String videoUrl, @NonNull String thumbnailUrl) {
         this.id = id;
         this.description = description;
         this.shortDescription = shortDescription;
@@ -115,6 +123,32 @@ public class Step {
     @NonNull
     public String getThumbnailUrl() {
         return thumbnailUrl;
+    }
+
+    @Nullable
+    public String toJson() {
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put(KEY_ID, id);
+            jsonObject.put(KEY_SHORT_DESCRIPTION, shortDescription);
+            jsonObject.put(KEY_DESCRIPTION, description);
+            jsonObject.put(KEY_VIDEO_URL, videoUrl);
+            jsonObject.put(KEY_THUMBNAIL_URL, thumbnailUrl);
+            return jsonObject.toString(2);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        PaperParcelStep.writeToParcel(this, dest, flags);
     }
 
     /**
