@@ -93,6 +93,42 @@ public class StepFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (Util.SDK_INT > 23) showStepVideo();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (Util.SDK_INT <= 23) showStepVideo();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (Util.SDK_INT <= 23) releasePlayer();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (Util.SDK_INT > 23) releasePlayer();
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        saveState(outState);
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if (savedInstanceState != null) restoreState(savedInstanceState);
+    }
+
     private void showLandscapeView() {
         hideSystemUi();
         showStepVideo();
@@ -131,43 +167,9 @@ public class StepFragment extends Fragment {
         playerView.setVisibility(View.VISIBLE);
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (Util.SDK_INT <= 23) releasePlayer();
-    }
-
-    private void releasePlayer() {
-        if (player != null) {
-            playbackPosition = player.getCurrentPosition();
-            currentWindow = player.getCurrentWindowIndex();
-            playWhenReady = player.getPlayWhenReady();
-            player.release();
-            player = null;
-        }
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (Util.SDK_INT > 23) releasePlayer();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        //hideSystemUi();
-        if ((Util.SDK_INT <= 23 || player == null)) {
-            if (step.getVideoUrl().isEmpty()) {
-                showNoVideoView();
-            } else {
-                showVideoView();
-                initializePlayer();
-            }
-        }
-    }
-
     private void initializePlayer() {
+        if (player != null) return;
+
         player = ExoPlayerFactory.newSimpleInstance(
                 new DefaultRenderersFactory(context),
                 new DefaultTrackSelector(), new DefaultLoadControl());
@@ -182,16 +184,21 @@ public class StepFragment extends Fragment {
         player.prepare(mediaSource, true, false);
     }
 
+
+    private void releasePlayer() {
+        if (player != null) {
+            playbackPosition = player.getCurrentPosition();
+            currentWindow = player.getCurrentWindowIndex();
+            playWhenReady = player.getPlayWhenReady();
+            player.release();
+            player = null;
+        }
+    }
+
     private MediaSource buildMediaSource(Uri mediaUri) {
         return new ExtractorMediaSource.Factory(
                 new DefaultHttpDataSourceFactory("BakingTime"))
                 .createMediaSource(mediaUri);
-    }
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        saveState(outState);
     }
 
     private void saveState(@NonNull Bundle outState) {
@@ -199,12 +206,6 @@ public class StepFragment extends Fragment {
         outState.putBoolean(STATE_PLAY_WHEN_READY, playWhenReady);
         outState.putInt(STATE_CURRENT_WINDOW, currentWindow);
         outState.putLong(STATE_PLAYBACK_POSITION, playbackPosition);
-    }
-
-    @Override
-    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
-        if (savedInstanceState != null) restoreState(savedInstanceState);
     }
 
     private void restoreState(@NonNull Bundle savedInstanceState) {
